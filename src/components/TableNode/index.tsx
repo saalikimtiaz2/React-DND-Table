@@ -16,7 +16,7 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
     })
 
     const onResize = (
-        event: React.SyntheticEvent,
+        _event: React.SyntheticEvent,
         { size }: { size: { width: number; height: number } }
     ) => {
         setDimensions({ width: size.width, height: size.height })
