@@ -1,4 +1,3 @@
-import { columnType } from 'interfaces/tableTypes'
 import React, { useState } from 'react'
 import { CiViewTable } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
@@ -6,8 +5,10 @@ import { Resizable } from 'react-resizable'
 import 'react-resizable/css/styles.css'
 import { Edge, Handle, MarkerType, NodeProps, Position } from 'reactflow'
 import 'reactflow/dist/style.css'
+import { columnType } from 'interfaces/tableTypes'
 
-const TableNode: React.FC<NodeProps> = ({ data }) => {
+
+const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     const { label, columns, nodeId, deleteTable, dragRef, setEdges } = data
 
     const [dimensions, setDimensions] = useState({
@@ -33,13 +34,14 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
             })
         )
 
-        const newEdge: Edge = {
+        const newEdge = {
             id: `edge-${nodeId}-${column.column_id}`,
             source: nodeId,
             sourceHandle: `source-${column.column_id}`,
+            souceId:column.column_data_type,
             target: '',
             targetHandle: '',
-            label: `${column.name} `,
+            label: `${column.name}`,
             style: { stroke: '#ff8d42', strokeWidth: 2 },
             markerStart: {
                 type: MarkerType.Arrow,
@@ -61,6 +63,7 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
     const onDropColumn = (evt: React.DragEvent, column: columnType) => {
         evt.preventDefault()
 
+        
         const updateEdge = {
             ...dragRef?.current,
             target: nodeId,
@@ -68,20 +71,30 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
             targetHandle: `target-${column.column_id}`,
         }
 
-        setEdges([updateEdge])
+        
+        if(dragRef.current.source!==nodeId){
+            if(dragRef.current.souceId===column.column_data_type){
+                setEdges([updateEdge])
+            }else{
+                console.log("Rows have different Data types.")
+            }
+        }else{
+            console.log("Couldn't connect on same table.")
+
+        }
     }
 
     return (
-        <Resizable
-            width={dimensions.width}
-            height={dimensions.height}
-            minConstraints={[250, 150]}
-            maxConstraints={[600, 400]}
-            resizeHandles={['se']}
-            onResize={onResize}
-            className="overflow-hidden bg-white rounded shadow-xl relative"
-        >
-            <div className="bg-white rounded shadow-xl relative min-w-[250px]">
+        // <Resizable
+        //     width={dimensions.width}
+        //     height={dimensions.height}
+        //     minConstraints={[250, 150]}
+        //     maxConstraints={[600, 400]}
+        //     resizeHandles={['se']}
+        //     onResize={onResize}
+        //     className="overflow-hidden bg-white rounded shadow-xl relative"
+        // >
+            <div className="bg-white rounded shadow-xl relative min-w-[250px] ">
                 <div className="flex items-center justify-between border-b border-gray-200">
                     <h3 className="text-sm px-2 py-1 flex items-center gap-x-1 font-medium">
                         <CiViewTable /> {label}
@@ -103,7 +116,7 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className='h-[80px] overflow-y-scroll'>
                         {columns.map((col: columnType, index: number) => (
                             <tr
                                 key={col.column_id}
@@ -143,8 +156,9 @@ const TableNode: React.FC<NodeProps> = ({ data }) => {
                     </tbody>
                 </table>
             </div>
-        </Resizable>
+        // </Resizable>
     )
 }
 
-export default TableNode
+
+export const TableNode = React.memo(TableNodeComponent)

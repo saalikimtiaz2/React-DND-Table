@@ -1,5 +1,5 @@
 import ErrorMessage from 'components/ErrorMessage'
-import TableNode from 'components/TableNode'
+import {TableNode} from 'components/TableNode'
 import React, { useRef, useState } from 'react'
 import 'react-resizable/css/styles.css'
 import ReactFlow, {
@@ -137,4 +137,4 @@ const GridArea: React.FC = () => {
     )
 }
 
-export default GridArea
+export default React.memo(GridArea)
