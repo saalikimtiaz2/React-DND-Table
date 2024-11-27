@@ -41,22 +41,22 @@ export const tableLists: TableTypes[] = [
             {
                 column_id: 'col2',
                 name: 'Salary',
-                column_data_type: 'Number',
+                column_data_type: 'number',
             },
             {
                 column_id: 'col3',
                 name: 'Tax',
-                column_data_type: 'Number',
+                column_data_type: 'number',
             },
             {
                 column_id: 'col4',
                 name: 'Allowance',
-                column_data_type: 'Number',
+                column_data_type: 'number',
             },
             {
                 column_id: 'col5',
                 name: 'Bonus',
-                column_data_type: 'Number',
+                column_data_type: 'number',
             },
         ],
     },

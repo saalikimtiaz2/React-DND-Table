@@ -85,15 +85,15 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     }
 
     return (
-        // <Resizable
-        //     width={dimensions.width}
-        //     height={dimensions.height}
-        //     minConstraints={[250, 150]}
-        //     maxConstraints={[600, 400]}
-        //     resizeHandles={['se']}
-        //     onResize={onResize}
-        //     className="overflow-hidden bg-white rounded shadow-xl relative"
-        // >
+        <Resizable
+            width={dimensions.width}
+            height={dimensions.height}
+            minConstraints={[250, 150]}
+            maxConstraints={[600, 400]}
+            resizeHandles={['se']}
+            onResize={onResize}
+            className="overflow-hidden bg-white rounded shadow-xl relative"
+        >
             <div className="bg-white rounded shadow-xl relative min-w-[250px] ">
                 <div className="flex items-center justify-between border-b border-gray-200">
                     <h3 className="text-sm px-2 py-1 flex items-center gap-x-1 font-medium">
@@ -156,7 +156,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
                     </tbody>
                 </table>
             </div>
-        // </Resizable>
+         </Resizable>
     )
 }
 
