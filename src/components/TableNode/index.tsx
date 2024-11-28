@@ -1,12 +1,11 @@
+import { columnType } from 'interfaces/tableTypes'
 import React, { useState } from 'react'
 import { CiViewTable } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
 import { Resizable } from 'react-resizable'
 import 'react-resizable/css/styles.css'
-import { Edge, Handle, MarkerType, NodeProps, Position } from 'reactflow'
+import { Handle, MarkerType, NodeProps, Position } from 'reactflow'
 import 'reactflow/dist/style.css'
-import { columnType } from 'interfaces/tableTypes'
-
 
 const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     const { label, columns, nodeId, deleteTable, dragRef, setEdges } = data
@@ -38,7 +37,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
             id: `edge-${nodeId}-${column.column_id}`,
             source: nodeId,
             sourceHandle: `source-${column.column_id}`,
-            souceId:column.column_data_type,
+            sourceId: column.column_data_type,
             target: '',
             targetHandle: '',
             label: `${column.name}`,
@@ -53,34 +52,30 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
             },
         }
 
-        if (setEdges) {
-            dragRef.current = newEdge
-        } else {
-            console.error('setEdges is not a function')
-        }
+        dragRef.current = newEdge
     }
 
-    const onDropColumn = (evt: React.DragEvent, column: columnType) => {
+    const onDropColumn = (evt: React.DragEvent, column: columnType | null) => {
         evt.preventDefault()
+        evt.stopPropagation()
 
-        
+        console.log('Drop event triggered on column: ', column?.name)
+
         const updateEdge = {
             ...dragRef?.current,
             target: nodeId,
-            label: `${dragRef.current.label} -> ${column.name}`,
-            targetHandle: `target-${column.column_id}`,
+            label: `${dragRef.current.label} -> ${column?.name}`,
+            targetHandle: `target-${column?.column_id}`,
         }
 
-        
-        if(dragRef.current.source!==nodeId){
-            if(dragRef.current.souceId===column.column_data_type){
+        if (dragRef.current?.source !== nodeId) {
+            if (dragRef.current?.sourceId === column?.column_data_type) {
                 setEdges([updateEdge])
-            }else{
-                console.log("Rows have different Data types.")
+            } else {
+                console.log('Rows have different Data types.')
             }
-        }else{
+        } else {
             console.log("Couldn't connect on same table.")
-
         }
     }
 
@@ -107,58 +102,65 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
                         <MdClose />
                     </button>
                 </div>
-                <table className="table-auto w-full text-xs mb-2">
-                    <thead>
-                        <tr className="bg-blue-100">
-                            <th className="text-left px-2">Column Name</th>
-                            <th className="text-left px-2 border-l border-gray-400">
-                                Data Type
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody className='h-[80px] overflow-y-scroll'>
-                        {columns.map((col: columnType, index: number) => (
-                            <tr
-                                key={col.column_id}
-                                id={col.column_id}
-                                className="cursor-pointer border-b border-gray-200 last:border-none relative"
-                                draggable
-                                onDragStart={(evt) => onDragStart(evt, col)}
-                                onDrop={(evt) => onDropColumn(evt, col)}
-                                onDragOver={(evt) => {
-                                    onDropColumn(evt, col)
-                                }}
-                            >
-                                <td className="px-2">{col.name}</td>
-                                <td className="px-2">{col.column_data_type}</td>
-                                <Handle
-                                    type="source"
-                                    position={Position.Right}
-                                    id={`source-${col.column_id}`}
-                                    style={{
-                                        top: `${index + 1}px`,
-                                        opacity: 0,
-                                        background: '#555',
-                                    }}
-                                />
-                                <Handle
-                                    type="target"
-                                    position={Position.Left}
-                                    id={`target-${col.column_id}`}
-                                    style={{
-                                        top: `${index + 1}px`,
-                                        opacity: 0,
-                                        background: '#555',
-                                    }}
-                                />
+                <div
+                    className="drop-container"
+                    onDrop={(evt) => onDropColumn(evt, null)} // Can be adapted
+                    onDragOver={(evt) => evt.preventDefault()}
+                >
+                    <table className="table-auto w-full text-xs mb-2">
+                        <thead>
+                            <tr className="bg-blue-100">
+                                <th className="text-left px-2">Column Name</th>
+                                <th className="text-left px-2 border-l border-gray-400">
+                                    Data Type
+                                </th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody className="h-[80px] overflow-y-scroll">
+                            {columns.map((col: columnType, index: number) => (
+                                <tr
+                                    key={col.column_id}
+                                    id={col.column_id}
+                                    className="cursor-pointer border-b border-gray-200 last:border-none relative"
+                                    draggable
+                                    onDragStart={(evt) => onDragStart(evt, col)}
+                                    onDrop={(evt) => onDropColumn(evt, col)}
+                                    onDragOver={(evt) => {
+                                        onDropColumn(evt, col)
+                                    }}
+                                >
+                                    <td className="px-2">{col.name}</td>
+                                    <td className="px-2">
+                                        {col.column_data_type}
+                                    </td>
+                                    <Handle
+                                        type="source"
+                                        position={Position.Right}
+                                        id={`source-${col.column_id}`}
+                                        style={{
+                                            top: `${index + 1}px`,
+                                            opacity: 0,
+                                            background: '#555',
+                                        }}
+                                    />
+                                    <Handle
+                                        type="target"
+                                        position={Position.Left}
+                                        id={`target-${col.column_id}`}
+                                        style={{
+                                            top: `${index + 1}px`,
+                                            opacity: 0,
+                                            background: '#555',
+                                        }}
+                                    />
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-         </Resizable>
+        </Resizable>
     )
 }
-
 
 export const TableNode = React.memo(TableNodeComponent)

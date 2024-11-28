@@ -1,5 +1,5 @@
 import ErrorMessage from 'components/ErrorMessage'
-import {TableNode} from 'components/TableNode'
+import { TableNode } from 'components/TableNode'
 import React, { useRef, useState } from 'react'
 import 'react-resizable/css/styles.css'
 import ReactFlow, {
@@ -24,6 +24,10 @@ const GridArea: React.FC = () => {
     const [showError, setShowError] = useState(false)
 
     const dragRef = useRef()
+
+    const nodeTypes = {
+        tableNode: TableNode, // Assuming TableNode is your custom node
+    }
 
     const onNodesChange: OnNodesChange = (changes) => {
         setNodes((nds) => applyNodeChanges(changes, nds))
@@ -126,7 +130,7 @@ const GridArea: React.FC = () => {
                         onEdgesDelete={onEdgesDelete}
                         onConnect={onConnect}
                         fitView
-                        nodeTypes={{ tableNode: TableNode }}
+                        nodeTypes={nodeTypes}
                     >
                         <Background gap={20} size={1} />
                         <Controls />
