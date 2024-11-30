@@ -1,6 +1,6 @@
-import ErrorMessage from 'components/ErrorMessage'
+import DialogBox from 'components/Dialog'
 import { TableNode } from 'components/TableNode'
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import 'react-resizable/css/styles.css'
 import ReactFlow, {
     Background,
@@ -21,12 +21,30 @@ import 'reactflow/dist/style.css'
 const GridArea: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
-    const [showError, setShowError] = useState(false)
+    const [tempEdges, setTempEdges] = useState<Edge[]>([])
+    const [showDialog, setShowDialog] = useState(false)
+    const [isResizing, setIsResizing] = useState(false)
+
+    useEffect(() => {
+        console.log(tempEdges)
+    }, [tempEdges])
+
+    const toggleDialog = () => {
+        setShowDialog((prevState) => !prevState)
+    }
+
+    const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(
+        null
+    )
+
+    useEffect(() => {
+        console.log(isResizing)
+    }, [isResizing])
 
     const dragRef = useRef()
 
     const nodeTypes = {
-        tableNode: TableNode, // Assuming TableNode is your custom node
+        tableNode: TableNode,
     }
 
     const onNodesChange: OnNodesChange = (changes) => {
@@ -46,6 +64,17 @@ const GridArea: React.FC = () => {
         )
     }
 
+    const onResizeStart = (event: React.SyntheticEvent) => {
+        console.log('resizeinggg')
+        event.stopPropagation()
+        setIsResizing(true)
+    }
+
+    const onResizeStop = (event: React.SyntheticEvent) => {
+        event.stopPropagation()
+        setIsResizing(false)
+    }
+
     const onConnect = (params: Connection) => {
         const { source, sourceHandle, target, targetHandle } = params
 
@@ -58,10 +87,7 @@ const GridArea: React.FC = () => {
                 targetHandle,
                 label: `${sourceHandle} → ${targetHandle}`,
                 style: { stroke: '#ff8d42', strokeWidth: 2 },
-                markerStart: {
-                    type: MarkerType.Arrow,
-                    color: '#ff8d42',
-                },
+
                 markerEnd: {
                     type: MarkerType.Arrow,
                     color: '#ff8d42',
@@ -82,19 +108,50 @@ const GridArea: React.FC = () => {
 
     const onDrop = (event: React.DragEvent) => {
         event.preventDefault()
+
         const tableData = event.dataTransfer.getData('table')
         const table = JSON.parse(tableData)
 
-        if (nodes.some((node) => node.id === table.id)) {
-            setShowError(true)
-            setTimeout(() => setShowError(false), 3000)
+        const existingNode = nodes.find((node) => node.id === table.id)
+
+        if (existingNode) {
+            setHighlightedNodeId(table.id)
+            setTimeout(() => setHighlightedNodeId(null), 3000)
             return
+        }
+
+        const viewportWidth = window.innerWidth
+        const viewportHeight = window.innerHeight
+        const offsetX = 200
+        const offsetY = 100
+
+        let x = event.clientX - offsetX
+        let y = event.clientY - offsetY
+
+        x = Math.max(0, Math.min(x, viewportWidth - 250))
+        y = Math.max(0, Math.min(y, viewportHeight - 120))
+
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i]
+            const nodeRight = node.position.x + 250
+            const nodeBottom = node.position.y + 120
+
+            if (
+                x < nodeRight &&
+                x + 250 > node.position.x &&
+                y < nodeBottom &&
+                y + 120 > node.position.y
+            ) {
+                x += 20
+                y += 20
+                i = -1
+            }
         }
 
         const newNode: Node = {
             id: table.id,
             type: 'tableNode',
-            position: { x: event.clientX - 200, y: event.clientY - 100 },
+            position: { x, y },
             data: {
                 label: table.name,
                 columns: table.columns,
@@ -103,6 +160,13 @@ const GridArea: React.FC = () => {
                 edges,
                 dragRef,
                 setEdges,
+                tempEdges,
+                setTempEdges,
+                toggleDialog,
+                isResizing,
+                onResizeStart,
+                onResizeStop,
+                onEdgesDelete,
             },
         }
 
@@ -115,7 +179,13 @@ const GridArea: React.FC = () => {
 
     return (
         <>
-            {showError && <ErrorMessage statement="Table already exists!" />}
+            <DialogBox
+                isOpen={showDialog}
+                closeModal={toggleDialog}
+                heading="Invalid Data Type"
+                subtitle="Couldn't connect the table because data type doesn't mactches."
+            />
+
             <ReactFlowProvider>
                 <div
                     className="w-full h-full relative bg-gray-50"
@@ -123,7 +193,11 @@ const GridArea: React.FC = () => {
                     onDragOver={onDragOver}
                 >
                     <ReactFlow
-                        nodes={nodes}
+                        nodes={nodes.map((node) => ({
+                            ...node,
+                            className:
+                                node.id === highlightedNodeId ? 'animate' : '',
+                        }))}
                         edges={edges}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
@@ -131,6 +205,7 @@ const GridArea: React.FC = () => {
                         onConnect={onConnect}
                         fitView
                         nodeTypes={nodeTypes}
+                        zoomOnScroll={false}
                     >
                         <Background gap={20} size={1} />
                         <Controls />

@@ -1,5 +1,6 @@
 import { TableTypes } from 'interfaces/tableTypes'
 import React, { useEffect, useState } from 'react'
+import { ResizableBox } from 'react-resizable'
 
 interface TableListProps {
     tables: TableTypes[]
@@ -8,6 +9,20 @@ interface TableListProps {
 const TableList: React.FC<TableListProps> = ({ tables }) => {
     const [search, setSearch] = useState<string>('')
     const [tableList, setTableList] = useState<TableTypes[]>([...tables])
+
+    const [dimensions, setDimensions] = useState({
+        width: 250,
+        height: 120,
+    })
+
+    const onResize = (
+        event: React.SyntheticEvent,
+        { size }: { size: { width: number; height: number } }
+    ) => {
+        event.preventDefault()
+        event.stopPropagation()
+        setDimensions({ width: size.width, height: size.height })
+    }
 
     useEffect(() => {
         if (search !== '') {
@@ -51,6 +66,16 @@ const TableList: React.FC<TableListProps> = ({ tables }) => {
             ) : (
                 <div className="text-center">Sorry such table found!</div>
             )}
+
+            <ResizableBox
+                width={dimensions.width}
+                height={dimensions.height}
+                resizeHandles={['se']}
+                onResize={onResize}
+                className="overflow-hidden bg-white border"
+            >
+                <div className="h-[600px] bg-blue-200 ">sfjkslaf</div>
+            </ResizableBox>
         </div>
     )
 }
