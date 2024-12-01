@@ -1,6 +1,6 @@
 import DialogBox from 'components/Dialog'
 import { nodeTypes } from 'config/nodeTypes'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useRef, useState } from 'react'
 import 'react-resizable/css/styles.css'
 import ReactFlow, {
     Background,
@@ -27,11 +27,6 @@ const GridArea: React.FC = () => {
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
     const [showDialog, setShowDialog] = useState(false)
-    const [isResizing, setIsResizing] = useState(false)
-
-    // useEffect(() => {
-    //     console.log(nodes)
-    // }, [nodes])
 
     const toggleDialog = () => {
         setShowDialog((prevState) => !prevState)
@@ -40,12 +35,7 @@ const GridArea: React.FC = () => {
     const [highlightedNodeId, setHighlightedNodeId] = useState<string | null>(
         null
     )
-
-    useEffect(() => {
-        console.log(isResizing)
-    }, [isResizing])
-
-    const dragRef = useRef()
+    const dragRef = useRef(null)
 
     const onNodesChange: OnNodesChange = (changes) => {
         setNodes((nds) => applyNodeChanges(changes, nds))
@@ -64,19 +54,9 @@ const GridArea: React.FC = () => {
         )
     }
 
-    const onResizeStart = (event: React.SyntheticEvent) => {
-        console.log('resizeinggg')
-        event.stopPropagation()
-        setIsResizing(true)
-    }
-
-    const onResizeStop = (event: React.SyntheticEvent) => {
-        event.stopPropagation()
-        setIsResizing(false)
-    }
-
     const onConnect = (params: Connection) => {
         const { source, sourceHandle, target, targetHandle } = params
+        console.log('Params', params)
 
         if (source && sourceHandle && target && targetHandle) {
             const newEdge: Edge = {
@@ -87,7 +67,6 @@ const GridArea: React.FC = () => {
                 targetHandle,
                 label: `${sourceHandle} → ${targetHandle}`,
                 style: { stroke: '#ff8d42', strokeWidth: 2 },
-
                 markerEnd: {
                     type: MarkerType.Arrow,
                     color: '#ff8d42',
@@ -153,7 +132,6 @@ const GridArea: React.FC = () => {
                 x: newNodeCol * cellWidth + baseOffset,
                 y: newNodeRow * cellHeight + baseOffset,
             },
-            dragging: !isResizing,
             data: {
                 label: table.name,
                 columns: table.columns,
@@ -163,9 +141,6 @@ const GridArea: React.FC = () => {
                 dragRef,
                 setEdges,
                 toggleDialog,
-                isResizing,
-                onResizeStart,
-                onResizeStop,
                 onEdgesDelete,
             },
         }
@@ -196,14 +171,17 @@ const GridArea: React.FC = () => {
                         nodes={nodes.map((node) => ({
                             ...node,
                             className:
-                                node.id === highlightedNodeId ? 'animate' : '',
+                                node.id === highlightedNodeId
+                                    ? 'animate animate-pulse'
+                                    : '',
                         }))}
                         edges={edges}
                         onNodesChange={onNodesChange}
                         onEdgesChange={onEdgesChange}
                         onEdgesDelete={onEdgesDelete}
                         onConnect={onConnect}
-                        // fitView
+                        nodesConnectable={false}
+                        connectionLineComponent={undefined}
                         nodeTypes={nodeTypes}
                         zoomOnScroll={false}
                     >
