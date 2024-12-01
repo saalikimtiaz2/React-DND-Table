@@ -1,5 +1,5 @@
 import DialogBox from 'components/Dialog'
-import { TableNode } from 'components/TableNode'
+import { nodeTypes } from 'config/nodeTypes'
 import React, { useEffect, useRef, useState } from 'react'
 import 'react-resizable/css/styles.css'
 import ReactFlow, {
@@ -19,15 +19,19 @@ import ReactFlow, {
 import 'reactflow/dist/style.css'
 
 const GridArea: React.FC = () => {
+    const gridSize = 3
+    const cellWidth = 350
+    const cellHeight = 200
+    const baseOffset = 100
+
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
-    const [tempEdges, setTempEdges] = useState<Edge[]>([])
     const [showDialog, setShowDialog] = useState(false)
     const [isResizing, setIsResizing] = useState(false)
 
-    useEffect(() => {
-        console.log(tempEdges)
-    }, [tempEdges])
+    // useEffect(() => {
+    //     console.log(nodes)
+    // }, [nodes])
 
     const toggleDialog = () => {
         setShowDialog((prevState) => !prevState)
@@ -42,10 +46,6 @@ const GridArea: React.FC = () => {
     }, [isResizing])
 
     const dragRef = useRef()
-
-    const nodeTypes = {
-        tableNode: TableNode,
-    }
 
     const onNodesChange: OnNodesChange = (changes) => {
         setNodes((nds) => applyNodeChanges(changes, nds))
@@ -120,38 +120,40 @@ const GridArea: React.FC = () => {
             return
         }
 
-        const viewportWidth = window.innerWidth
-        const viewportHeight = window.innerHeight
-        const offsetX = 200
-        const offsetY = 100
+        // Find next available position for new node only
+        const occupiedPositions = new Set(
+            nodes.map((node) => `${node.position.x},${node.position.y}`)
+        )
 
-        let x = event.clientX - offsetX
-        let y = event.clientY - offsetY
+        let newNodeCol = 0
+        let newNodeRow = 0
 
-        x = Math.max(0, Math.min(x, viewportWidth - 250))
-        y = Math.max(0, Math.min(y, viewportHeight - 120))
+        // Find first unoccupied position
+        while (true) {
+            const xAxis = newNodeCol * cellWidth + baseOffset
+            const yAxis = newNodeRow * cellHeight + baseOffset
+            const posKey = `${xAxis},${yAxis}`
 
-        for (let i = 0; i < nodes.length; i++) {
-            const node = nodes[i]
-            const nodeRight = node.position.x + 250
-            const nodeBottom = node.position.y + 120
+            if (!occupiedPositions.has(posKey)) {
+                break
+            }
 
-            if (
-                x < nodeRight &&
-                x + 250 > node.position.x &&
-                y < nodeBottom &&
-                y + 120 > node.position.y
-            ) {
-                x += 20
-                y += 20
-                i = -1
+            newNodeCol += 1
+            if (newNodeCol >= gridSize) {
+                newNodeCol = 0
+                newNodeRow += 1
+                if (newNodeRow >= gridSize) newNodeRow = 0
             }
         }
 
         const newNode: Node = {
             id: table.id,
             type: 'tableNode',
-            position: { x, y },
+            position: {
+                x: newNodeCol * cellWidth + baseOffset,
+                y: newNodeRow * cellHeight + baseOffset,
+            },
+            dragging: !isResizing,
             data: {
                 label: table.name,
                 columns: table.columns,
@@ -160,8 +162,6 @@ const GridArea: React.FC = () => {
                 edges,
                 dragRef,
                 setEdges,
-                tempEdges,
-                setTempEdges,
                 toggleDialog,
                 isResizing,
                 onResizeStart,
@@ -188,7 +188,7 @@ const GridArea: React.FC = () => {
 
             <ReactFlowProvider>
                 <div
-                    className="w-full h-full relative bg-gray-50"
+                    className="w-full h-full relative bg-[#1c1c1c]"
                     onDrop={onDrop}
                     onDragOver={onDragOver}
                 >
@@ -203,7 +203,7 @@ const GridArea: React.FC = () => {
                         onEdgesChange={onEdgesChange}
                         onEdgesDelete={onEdgesDelete}
                         onConnect={onConnect}
-                        fitView
+                        // fitView
                         nodeTypes={nodeTypes}
                         zoomOnScroll={false}
                     >

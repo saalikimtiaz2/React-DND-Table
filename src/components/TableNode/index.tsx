@@ -1,7 +1,8 @@
 import { columnType } from 'interfaces/tableTypes'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { CiViewTable } from 'react-icons/ci'
 import { MdClose } from 'react-icons/md'
+import { ResizableBox } from 'react-resizable'
 import 'react-resizable/css/styles.css'
 import { Handle, MarkerType, NodeProps, Position } from 'reactflow'
 import 'reactflow/dist/style.css'
@@ -15,13 +16,18 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
         dragRef,
         setEdges,
         toggleDialog,
-        onEdgesDelete,
-        edges,
-        tempEdges,
-        setTempEdges,
         onResizeStart,
         onResizeStop,
     } = data
+
+    const [isDraggingRow, setIsDraggingRow] = useState<null | string>(null)
+
+    const onDragEnter = (colId: string) => setIsDraggingRow(colId)
+    const onDragLeave = () => setIsDraggingRow(null)
+
+    useEffect(() => {
+        console.log('row', isDraggingRow)
+    }, [isDraggingRow])
 
     const [dimensions, setDimensions] = useState({
         width: 250,
@@ -29,15 +35,16 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     })
 
     const onResize = (
-        event: React.SyntheticEvent,
+        _event: React.SyntheticEvent,
         { size }: { size: { width: number; height: number } }
     ) => {
-        event.preventDefault()
-        event.stopPropagation()
         setDimensions({ width: size.width, height: size.height })
     }
 
     const onDragStart = (evt: React.DragEvent, column: columnType) => {
+        evt.stopPropagation()
+        evt.dataTransfer.effectAllowed = 'move'
+
         evt.dataTransfer.setData(
             'sourceColumn',
             JSON.stringify({
@@ -73,6 +80,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     const onDropColumn = (evt: React.DragEvent, column: columnType | null) => {
         evt.preventDefault()
         evt.stopPropagation()
+        onDragLeave()
 
         console.log('dropping')
 
@@ -95,106 +103,132 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     }
 
     return (
-        // <ResizableBox
-        //     width={dimensions.width}
-        //     height={dimensions.height}
-        //     minConstraints={[250, 120]}
-        //     maxConstraints={[600, 400]}
-        //     resizeHandles={['se']}
-        //     onResize={onResize}
-        //     onResizeStart={onResizeStart}
-        //     onResizeStop={onResizeStop}
-        // >
-        <div className="bg-white rounded shadow-xl relative min-w-[250px]  ">
-            <div className="flex items-center justify-between border-b border-gray-200">
-                <h3 className="text-sm px-2 py-1 flex items-center gap-x-1 font-medium">
-                    <CiViewTable /> {label}
-                </h3>
-                <button
-                    name="delete-table-btn"
-                    className="px-2 hover:text-red-700"
-                    onClick={() => deleteTable(nodeId)}
-                >
-                    <MdClose />
-                </button>
-            </div>
+        <ResizableBox
+            width={dimensions.width}
+            height={dimensions.height}
+            minConstraints={[250, 120]}
+            maxConstraints={[600, 400]}
+            resizeHandles={['se']}
+            onResize={onResize}
+            onResizeStart={onResizeStart}
+            onResizeStop={onResizeStop}
+            className="overflow-hidden"
+        >
             <div
-                onDragOver={(evt) => evt.preventDefault()}
-                onWheel={(evt) => {
-                    evt.stopPropagation()
-                }}
+                className="bg-white rounded shadow-xl relative min-w-[250px]  "
+                onMouseDown={(e) => e.stopPropagation()}
             >
-                <table
-                    className="table-auto w-full text-xs mb-2"
-                    onDragOver={(evt) => evt.preventDefault()}
-                    onDragEnter={(evt) => evt.preventDefault()}
-                    onDragLeave={(evt) => evt.preventDefault()}
+                <div className="flex items-center justify-between border-b border-gray-200">
+                    <h3 className="text-sm px-2 py-1 flex items-center gap-x-1 font-medium">
+                        <CiViewTable /> {label}
+                    </h3>
+                    <button
+                        name="delete-table-btn"
+                        className="px-2 hover:text-red-700"
+                        onClick={() => deleteTable(nodeId)}
+                    >
+                        <MdClose />
+                    </button>
+                </div>
+                <div
+                    onDragOver={(evt) => {
+                        evt.preventDefault()
+                        evt.stopPropagation()
+                    }}
+                    onWheel={(evt) => evt.stopPropagation()}
                 >
-                    <thead>
-                        <tr className="bg-blue-100">
-                            <th className="text-left px-2">Column Name</th>
-                            <th className="text-left px-2 border-l border-gray-400">
+                    <div
+                        className="table-auto w-full text-xs mb-2"
+                        onDragOver={(evt) => evt.preventDefault()}
+                        onDragEnter={(evt) => evt.preventDefault()}
+                        onDragLeave={(evt) => evt.preventDefault()}
+                    >
+                        <div className="bg-blue-100 flex items-center">
+                            <div className="text-left flex-1 px-2">
+                                Column Name
+                            </div>
+                            <div className="text-left flex-1 px-2 border-l border-gray-400">
                                 Data Type
-                            </th>
-                        </tr>
-                    </thead>
+                            </div>
+                        </div>
 
-                    <tbody>
-                        {columns.map((col: columnType, index: number) => (
-                            <tr
-                                key={col.column_id}
-                                id={col.column_id}
-                                className="cursor-pointer border-b bg-primary/5 p-4 border-gray-200 z-50 last:border-none relative"
-                                draggable
-                                onDragStart={(evt) => onDragStart(evt, col)}
-                                onDrop={(evt) => {
-                                    console.log('Here I am')
-                                    onDropColumn(evt, col)
-                                }}
-                                onDragEnd={() => {
-                                    console.log('Dropping ')
-                                }}
-                                onDragOver={(evt) => evt.preventDefault()}
-                                // onDragEnter={(evt) => evt.preventDefault()}
-                                // onDragLeave={(evt) => evt.preventDefault()}
-                            >
-                                <td className="px-4 bg-secondary">
-                                    {col.name}
-                                </td>
-                                <td className="px-2 z-20">
-                                    {col.column_data_type}
-                                </td>
-                                <Handle
-                                    type="source"
-                                    position={Position.Right}
-                                    id={`source-${col.column_id}`}
-                                    style={{
-                                        top: `50%`,
-                                        transform: 'traslateY(-50%)',
-                                        opacity: 0,
-                                        height: '100%',
-                                        background: '#555',
+                        <div>
+                            {columns.map((col: columnType) => (
+                                <div
+                                    key={col.column_id}
+                                    id={col.column_id}
+                                    data-row="true"
+                                    className={`z-[999] flex items-center border-b bg-primary/5 border-gray-200 last:border-none relative ${
+                                        isDraggingRow === col.column_id
+                                            ? 'bg-green-100'
+                                            : ''
+                                    }`}
+                                    draggable={false}
+                                    onDragEnter={(evt) => {
+                                        onDragEnter(col.column_id)
+                                        evt.preventDefault()
                                     }}
-                                />
-                                <Handle
-                                    type="target"
-                                    position={Position.Left}
-                                    id={`target-${col.column_id}`}
-                                    style={{
-                                        top: `50%`,
-                                        transform: 'traslateY(-50%)',
-                                        opacity: 0,
-                                        height: '100%',
-                                        background: '#555',
+                                    onDragLeave={(evt) => {
+                                        evt.preventDefault()
+                                        onDragLeave()
                                     }}
-                                />
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                    onDragOver={(evt) => evt.preventDefault()}
+                                    onDrop={(evt) => onDropColumn(evt, col)}
+                                >
+                                    {isDraggingRow === col.column_id ? (
+                                        <div className="text-center flex-1 text-gray-400">
+                                            Drop here
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div
+                                                className="px-4 bg-secondary flex-1"
+                                                draggable="true"
+                                                onDragStart={(evt) =>
+                                                    onDragStart(evt, col)
+                                                }
+                                                onDrag={(evt) =>
+                                                    evt.stopPropagation()
+                                                }
+                                            >
+                                                {col.name}
+                                            </div>
+                                            <div className="px-2 flex-1">
+                                                {col.column_data_type}
+                                            </div>
+                                        </>
+                                    )}
+                                    <Handle
+                                        type="source"
+                                        position={Position.Right}
+                                        id={`source-${col.column_id}`}
+                                        style={{
+                                            top: `50%`,
+                                            transform: 'translateY(-50%)',
+                                            opacity: 0,
+                                            height: '100%',
+                                            background: '#555',
+                                        }}
+                                    />
+                                    <Handle
+                                        type="target"
+                                        position={Position.Left}
+                                        id={`target-${col.column_id}`}
+                                        style={{
+                                            top: `50%`,
+                                            transform: 'translateY(-50%)',
+                                            opacity: 0,
+                                            height: '100%',
+                                            background: '#555',
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
-        // </ResizableBox>
+        </ResizableBox>
     )
 }
 

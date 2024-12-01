@@ -87,7 +87,38 @@ export const tableLists: TableTypes[] = [
             {
                 column_id: 'col5',
                 name: 'Bills',
+                column_data_type: 'number',
+            },
+        ],
+    },
+    {
+        id: 'docTable',
+        name: 'Doctors',
+        columns: [
+            {
+                column_id: 'col1',
+                name: 'Did',
                 column_data_type: 'string',
+            },
+            {
+                column_id: 'col2',
+                name: 'Doctor Name',
+                column_data_type: 'string',
+            },
+            {
+                column_id: 'col3',
+                name: 'Department',
+                column_data_type: 'string',
+            },
+            {
+                column_id: 'col4',
+                name: 'Experience',
+                column_data_type: 'string',
+            },
+            {
+                column_id: 'col5',
+                name: 'Salary',
+                column_data_type: 'number',
             },
         ],
     },

@@ -50,7 +50,7 @@ const TableList: React.FC<TableListProps> = ({ tables }) => {
                     {tableList.map((table: TableTypes) => (
                         <div
                             key={table.id}
-                            className="bg-gray-200 p-3 rounded-md mb-2 shadow-md cursor-pointer hover:bg-gray-300"
+                            className="bg-gray-200 p-3 rounded-md mb-2 shadow-md cursor-pointer hover:bg-gray-300/10"
                             draggable
                             onDragStart={(e) =>
                                 e.dataTransfer.setData(
