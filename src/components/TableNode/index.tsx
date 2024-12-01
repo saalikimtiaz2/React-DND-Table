@@ -69,7 +69,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
                             <div className="text-left flex-1 px-2">
                                 Column Name
                             </div>
-                            <div className="text-left flex-1 px-2 ">
+                            <div className="text-right flex-1 px-2">
                                 Data Type
                             </div>
                         </div>
