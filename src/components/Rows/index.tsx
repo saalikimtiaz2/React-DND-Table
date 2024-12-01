@@ -84,7 +84,7 @@ const RowItem: React.FC<RowItemType> = ({
             key={rowData.column_id}
             id={rowData.column_id}
             data-row="true"
-            className={`z-[999] flex items-center h-[20px] border-b cursor-default bg-primary/5 border-gray-200 last:border-none relative ${
+            className={`z-[999] row-main flex items-center h-[20px] border-b cursor-default bg-primary/5 border-gray-200 last:border-none relative ${
                 isDraggingRow === rowData.column_id ? 'bg-green-100' : ''
             }`}
             draggable={true}
@@ -117,7 +117,7 @@ const RowItem: React.FC<RowItemType> = ({
                     <div className="px-4 bg-secondary/50 flex-1 h-full">
                         {rowData.name}
                     </div>
-                    <div className="px-2 flex-1  h-full">
+                    <div className="px-2 flex-1 text-right pr-6  h-full">
                         {rowData.column_data_type}
                     </div>
                 </>
@@ -126,14 +126,15 @@ const RowItem: React.FC<RowItemType> = ({
                 type="source"
                 position={Position.Right}
                 id={`source-${rowData.column_id}`}
-                className="handle"
+                className="handle handleVisible"
                 style={{
                     top: `50%`,
+                    right: '2px',
                     transform: 'translateY(-50%)',
                     height: '100%',
-                    borderRadius: 0,
-                    opacity: '50%',
-                    width: '20px',
+                    borderRadius: '3px',
+                    maxHeight: '16px',
+                    width: '16px',
                     background: 'white',
                     border: 'none',
                 }}

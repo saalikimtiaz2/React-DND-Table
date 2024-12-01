@@ -20,7 +20,21 @@
 
 .handle {
     background-image: url('https://www.svgrepo.com/show/459043/drag-handle.svg') !important;
-    @apply cursor-move bg-opacity-40 bg-contain bg-no-repeat !important;
+    @apply cursor-grab bg-opacity-40 bg-contain bg-center bg-no-repeat !important;
+}
+
+.handleVisible {
+    opacity: 0;
+}
+.row-main {
+    &:hover {
+        .handleVisible {
+            opacity: 1;
+        }
+    }
+}
+
+.handle {
 }
 
 .react-resizable-handle {

@@ -24,6 +24,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
     return (
         <>
             <NodeResizer
+                color="#d3d3d3"
                 minWidth={250}
                 minHeight={100}
                 maxWidth={350}
@@ -36,7 +37,7 @@ const TableNodeComponent: React.FC<NodeProps> = ({ data }) => {
                 onResize={(e) => setHeight(`${e.y}px`)}
             />
             <div
-                style={{ maxHeight: `${height} !important` }}
+                style={{ height: `${height} !important` }}
                 className="z-[997] bg-white rounded shadow-xl relative h-full min-w-[250px] overflow-x-hidden overflow-y-scroll scrollbar-hidden nowheel border border-grey-500"
             >
                 <div className="flex items-center justify-between border-b border-gray-200 h-[30px]">

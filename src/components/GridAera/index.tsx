@@ -132,6 +132,9 @@ const GridArea: React.FC = () => {
                 x: newNodeCol * cellWidth + baseOffset,
                 y: newNodeRow * cellHeight + baseOffset,
             },
+            style: {
+                height: 150,
+            },
             data: {
                 label: table.name,
                 columns: table.columns,
